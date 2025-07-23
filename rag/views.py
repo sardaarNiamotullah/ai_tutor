@@ -36,5 +36,5 @@ class StaticPDFProcessView(APIView):
 
         return Response({
             "message": f"{file_name} processed successfully",
-            "chunks": chunks[:3]  # Preview first 3 chunks
+            "chunks": chunks[:7]  # Preview first 3 chunks
         })

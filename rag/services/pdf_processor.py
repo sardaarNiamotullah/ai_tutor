@@ -1,15 +1,20 @@
-import fitz  # PyMuPDF
+import fitz
 from ..embeddings.chunker import chunk_text
 from ..embeddings.embedder import generate_embeddings
+from .preprocessor import clean_text
+
 
 def process_pdf(file_path):
     doc = fitz.open(file_path)
-    text = ""
+    raw_text = ""
     for page in doc:
-        text += page.get_text()
+        raw_text += page.get_text()
 
-    cleaned = " ".join(text.split())  # Remove newlines, extra spaces
-    chunks = chunk_text(cleaned)
+    cleaned_text, language = clean_text(raw_text)
+
+    # ✅ Pass the detected language to chunk_text
+    chunks = chunk_text(cleaned_text, language=language)
+
     embeddings = generate_embeddings(chunks)
 
-    return chunks # or embeddings if you prefer
+    return chunks
