@@ -1,7 +1,7 @@
 import os
 from django.conf import settings
-from ..utils.reader import read_and_clean_pdf
-from ..utils.embedder import chunk_and_embed
+from ..utils.pdf_reader import read_and_clean_pdf
+from ..utils.data_embedder import chunk_and_embed
 from ..models import PDFChunk
 
 def ingest_pdf_data(file_name):
@@ -27,4 +27,5 @@ def ingest_pdf_data(file_name):
             language=language,
             source_file=file_name
         )
+
     print(f"[Ingest] ✅ {len(chunks)} chunks saved to DB.")
