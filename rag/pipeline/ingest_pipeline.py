@@ -19,8 +19,7 @@ def ingest_pdf_data(file_name):
     chunks, embeddings = chunk_and_embed(cleaned_text, language)
 
     for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-        print(f"[Ingest] 🔹 Chunk #{i+1}: {chunk[:100]}...")
-        print(f"[Ingest] 🔸 Embedding (first 4 floats): {embedding[:4]}")
+        
         PDFChunk.objects.create(
             text=chunk,
             embedding=embedding,

@@ -1,6 +1,6 @@
 from django.db import connection
 from ..models import PDFChunk
-from ..utils.embedder import model
+from ..utils.data_embedder import model
 
 def get_relevant_chunks(query, top_k=3):
     query_embedding = model.encode([query])[0].tolist()

@@ -11,7 +11,7 @@ class RagConfig(AppConfig):
         from .pipeline.ingest_pipeline import ingest_pdf_data
         def run_on_start():
             try:
-                ingest_pdf_data("banglaboi.pdf")
+                ingest_pdf_data("englishboi.pdf")
             except OperationalError:
                 print("[AppConfig] ⚠️ Database not ready yet...")
 
