@@ -6,15 +6,13 @@ class RagConfig(AppConfig):
     name = 'rag'
 
     def ready(self):
-        from .initialize import initialize_embeddings
-        from .models import PDFChunk
+        from .pipeline.ingest_pipeline import ingest_pdf_data
 
         def run_on_start():
             from django.db.utils import OperationalError
             try:
-                if not PDFChunk.objects.exists():
-                    initialize_embeddings()
+                ingest_pdf_data("banglaboi.pdf")
             except OperationalError:
-                print("Database not ready yet...")
+                print("[AppConfig] ⚠️ Database not ready yet...")
 
-        threading.Thread(target=run_on_start).start()    
+        threading.Thread(target=run_on_start).start()
