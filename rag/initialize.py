@@ -5,7 +5,7 @@ from .embeddings.embedder import generate_embeddings
 from .models import PDFChunk
 
 def initialize_embeddings():
-    file_name = "HSC26-Bangla1st-Paper.pdf"
+    file_name = "banglaboi.pdf"
     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
 
     if not os.path.exists(file_path):

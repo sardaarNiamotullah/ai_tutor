@@ -6,6 +6,8 @@ from rest_framework import status
 import os
 
 from .services.pdf_processor import process_pdf
+from .services.rag_engine import generate_answer
+from .services.vector_search import semantic_search
 
 class PDFUploadView(APIView):
     parser_classes = [MultiPartParser]
@@ -25,7 +27,7 @@ class PDFUploadView(APIView):
     
 class StaticPDFProcessView(APIView):
     def get(self, _request):
-        file_name = "HSC26-Bangla1st-Paper.pdf"
+        file_name = "banglaboi.pdf"
         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
 
         if not os.path.exists(file_path):
@@ -38,4 +40,18 @@ class StaticPDFProcessView(APIView):
             "message": f"{file_name} processed successfully",
             "chunks": chunks[:5],
             "language": language
+        })
+
+class RAGQueryView(APIView):
+    def post(self, request):
+        query = request.data.get("query")
+        if not query:
+            return Response({"error": "Missing 'query' in request."}, status=status.HTTP_400_BAD_REQUEST)
+
+        chunks = semantic_search(query, top_k=3)
+        answer = generate_answer(query)
+
+        return Response({
+            "answer": answer,
+            "chunks": [{"text": chunk["text"]} for chunk in chunks]
         })
