@@ -1,7 +1,12 @@
 import fitz
+import logging
 from ..embeddings.chunker import chunk_text
 from ..embeddings.embedder import generate_embeddings
 from .preprocessor import clean_text
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def process_pdf(file_path):
@@ -9,6 +14,9 @@ def process_pdf(file_path):
     raw_text = ""
     for page in doc:
         raw_text += page.get_text()
+    
+        
+    # logger.info(f"Extracted raw text (first 500 chars):\n{raw_text[:500]}...")
 
     cleaned_text, language = clean_text(raw_text)
 
@@ -17,4 +25,4 @@ def process_pdf(file_path):
 
     embeddings = generate_embeddings(chunks)
 
-    return chunks
+    return chunks, language

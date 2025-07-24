@@ -19,9 +19,9 @@ class PDFUploadView(APIView):
                 dest.write(chunk)
 
         # Process uploaded PDF
-        result = process_pdf(file_path)
+        result, language = process_pdf(file_path)
 
-        return Response({"message": "PDF uploaded and processed", "chunks": result[:3]})  # preview first 3 chunks
+        return Response({"message": "PDF uploaded and processed", "chunks": result[:5], "language": language})  # preview first 3 chunks
     
 class StaticPDFProcessView(APIView):
     def get(self, _request):
@@ -32,9 +32,10 @@ class StaticPDFProcessView(APIView):
             return Response({"error": f"{file_name} not found in media directory."}, status=status.HTTP_404_NOT_FOUND)
 
         # Process the static file
-        chunks = process_pdf(file_path)
+        chunks, language = process_pdf(file_path)
 
         return Response({
             "message": f"{file_name} processed successfully",
-            "chunks": chunks[:7]  # Preview first 3 chunks
+            "chunks": chunks[:5],
+            "language": language
         })
