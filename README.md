@@ -89,8 +89,8 @@ ollama run llama3.2
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/sardaarNiamotullah/ai_tutor-backend
-   cd ai_tutor_backend
+   git clone https://github.com/sardaarNiamotullah/ai_tutor
+   cd ai_tutor
    ```
 
 2. Create a virtual environment and activate it:
