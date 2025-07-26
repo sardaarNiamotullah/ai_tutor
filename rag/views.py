@@ -28,7 +28,7 @@ class RAGQueryView(APIView):
         return Response({
             "answer": result["answer"],             # LLM-generated answer
             # "chunks": result["chunks"],           # Can be shown for debugging or transparency
-            "evaluation": result["evaluation"]      # Cosine similarity scores (relevance metric)
+            # "evaluation": result["evaluation"]      # Cosine similarity scores (relevance metric)
         })
 
 

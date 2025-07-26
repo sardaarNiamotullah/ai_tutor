@@ -61,21 +61,16 @@ def handle_query(query, top_k=3):
     # STEP 7: Store the new interaction in short-term memory (volatile)
     add_interaction(query, answer, chunks)
 
-    # STEP 8: Print current short-term memory to debug and verify memory behavior
-    print(f"[Short-Term Memory] Current conversation history (last {len(get_memory())} turns):")
-    for i, interaction in enumerate(get_memory(), 1):
-        print(f"  Turn {i}: Q: {interaction['query']} | A: {interaction['answer']}")
-
-    # STEP 9: Embed the user query for evaluation
+    # STEP 8: Embed the user query for evaluation
     query_embedding = embedding_model.encode([f"query: {query}"])[0]
 
-    # STEP 10: Extract embeddings of retrieved chunks for evaluation
+    # STEP 9: Extract embeddings of retrieved chunks for evaluation
     chunk_embeddings = [c["embedding"] for c in chunks]
 
-    # STEP 11: Compute cosine similarity between query and each retrieved chunk
+    # STEP 10: Compute cosine similarity between query and each retrieved chunk
     similarity_scores, avg_similarity = compute_cosine_similarity(query_embedding, chunk_embeddings)
 
-    # STEP 12: Return the full result with answer, retrieved chunks, and evaluation scores
+    # STEP 11: Return the full result with answer, retrieved chunks, and evaluation scores
     return {
         "answer": answer,
         "chunks": chunks,

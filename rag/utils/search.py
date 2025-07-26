@@ -1,7 +1,5 @@
-from django.db import connection
 from ..models import PDFChunk
 from ..utils.data_embedder import model  # SentenceTransformer model for encoding text
-import numpy as np
 from pgvector.django import CosineDistance  # Used for vector-based similarity search
 
 
