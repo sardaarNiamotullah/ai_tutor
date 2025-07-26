@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RAGQueryView, RAGResetView
+from .views import RAGQueryView
 
 # ---------------------------------------------------------------------
 # 🔗 URL Configuration for RAG (Retrieval-Augmented Generation) System
@@ -20,7 +20,7 @@ urlpatterns = [
     path("query/", RAGQueryView.as_view(), name="rag-query"),
 
     # ---------------------------------------------------------------
-    # POST /api/rag/reset/
+    # POST /api/rag/reset/  used on rapid testing purposes during development
     # ---------------------------------------------------------------
     # 🔄 Utility endpoint to reinitialize the vector DB:
     #     - Deletes all existing chunks from the database
@@ -28,5 +28,5 @@ urlpatterns = [
     #     - Then answers a fresh query using the new data
     # 🔹 Useful during development or for updating the knowledge base
     # 🔹 Uses: `RAGResetView`
-    path("reset/", RAGResetView.as_view(), name="rag-reset"),
+    # path("reset/", RAGResetView.as_view(), name="rag-reset"),
 ]

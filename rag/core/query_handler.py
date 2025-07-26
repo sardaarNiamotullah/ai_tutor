@@ -1,85 +1,84 @@
-from ..utils.search import get_relevant_chunks                 # For retrieving top-k relevant chunks from DB
-from ..utils.data_embedder import model as embedding_model     # SentenceTransformer for embedding the query
-from ..utils.evaluator import compute_cosine_similarity        # Function to evaluate relevance of chunks
-import ollama                                                  # Used to interact with local Ollama LLM (e.g., llama3.2)
-
+from ..core.short_term_memory import add_interaction, get_memory         # For managing short-term memory
+from ..utils.search import get_relevant_chunks                           # For retrieving relevant chunks from the knowledge base
+from ..utils.data_embedder import model as embedding_model               # SentenceTransformer model used for embeddings
+from ..utils.evaluator import compute_cosine_similarity                  # Utility to compute cosine similarity between embeddings
+import ollama                                                            # LLM interface (Ollama backend)
 
 def handle_query(query, top_k=3):
     """
-    Handles a user query by:
-    1. Retrieving relevant document chunks from the vector DB
-    2. Generating a grounded response using the LLM (Ollama)
-    3. Evaluating chunk-query relevance via cosine similarity
+    Handle a user query by retrieving relevant document chunks,
+    combining them with recent conversation history, generating a response using an LLM,
+    storing the interaction in short-term memory, and evaluating relevance with cosine similarity.
 
     Args:
-        query (str): The users question in English or Bangla.
-        top_k (int): Number of chunks to retrieve from DB for grounding.
+        query (str): The users question.
+        top_k (int): Number of top document chunks to retrieve based on similarity.
 
     Returns:
-        dict: {
-            "answer": final generated response,
-            "chunks": retrieved chunks (text + embedding + distance),
-            "evaluation": {
-                "cosine_similarity_scores": list[float],
-                "average_score": float
-            }
-        }
+        dict: Contains the LLM-generated answer, the retrieved chunks,
+              and an evaluation report with cosine similarity scores.
     """
 
-    # --------------------------------------------------------------------
-    # 🔍 Step 1: Retrieve top-k relevant document chunks from the DB
-    # --------------------------------------------------------------------
-    print(f"[QueryHandler] 🔍 Searching top {top_k} chunks for: {query}")
-    chunks = get_relevant_chunks(query, top_k=top_k)
 
-    # Combine all top-k chunk texts into a single string to form LLM context
+    # STEP 1: Retrieve short-term memory (recent Q&A interactions)
+    memory = get_memory()
+
+    # STEP 2: Retrieve top-K relevant chunks from the vector DB (long-term memory)
+    chunks = get_relevant_chunks(query, top_k)
+
+    # STEP 3: Prepare the document context from retrieved chunks
     context = "\n".join([c["text"] for c in chunks])
 
-    # --------------------------------------------------------------------
-    # 🧠 Step 2: Build the prompt for the LLM (grounded in the chunk context)
-    # --------------------------------------------------------------------
+    # STEP 4: Reconstruct conversation history as a formatted string for the prompt
+    conversation_history = ""
+    for interaction in memory:
+        conversation_history += f"Q: {interaction['query']}\nA: {interaction['answer']}\n\n"
+
+    # STEP 5: Construct the LLM prompt combining history, context, and current query
     prompt = f"""
-    You are an expert assistant.
+    You are a Tutor who teach school going kids.
     Answer the following question *only* using the provided context.
     If the answer is not present in the context exactly as it is then at first try to guess it based on the context.
     Return your answer in the same language as the question.
     The answer should be very short and precise.
 
+    Conversation history:
+    {conversation_history}
+
     Context:
     {context}
 
-    Question: {query}
+    Current question:
+    {query}
 
     Answer:
     """
 
-    # --------------------------------------------------------------------
-    # 🤖 Step 3: Generate the answer using Ollama (e.g., LLaMA3 model)
-    # --------------------------------------------------------------------
-    response = ollama.chat(
-        model="llama3.2", 
-        messages=[{"role": "user", "content": prompt}]
-    )
+    # STEP 6: Call the LLM with the generated prompt using Ollama API
+    response = ollama.chat(model="llama3.2", messages=[{"role": "user", "content": prompt}])
     answer = response["message"]["content"].strip()
 
-    # --------------------------------------------------------------------
-    # 📏 Step 4: Evaluate how relevant the chunks are to the query
-    # - Encode the query into a vector
-    # - Compare with each retrieved chunk’s embedding using cosine similarity
-    # --------------------------------------------------------------------
+    # STEP 7: Store the new interaction in short-term memory (volatile)
+    add_interaction(query, answer, chunks)
+
+    # STEP 8: Print current short-term memory to debug and verify memory behavior
+    print(f"[Short-Term Memory] Current conversation history (last {len(get_memory())} turns):")
+    for i, interaction in enumerate(get_memory(), 1):
+        print(f"  Turn {i}: Q: {interaction['query']} | A: {interaction['answer']}")
+
+    # STEP 9: Embed the user query for evaluation
     query_embedding = embedding_model.encode([f"query: {query}"])[0]
+
+    # STEP 10: Extract embeddings of retrieved chunks for evaluation
     chunk_embeddings = [c["embedding"] for c in chunks]
 
-    similarity_scores, avg_similarity = compute_cosine_similarity(
-        query_embedding, chunk_embeddings
-    )
+    # STEP 11: Compute cosine similarity between query and each retrieved chunk
+    similarity_scores, avg_similarity = compute_cosine_similarity(query_embedding, chunk_embeddings)
 
-    # --------------------------------------------------------------------
-    # 📦 Step 5: Return the result: answer + raw chunks + evaluation metrics
-    # --------------------------------------------------------------------
+    # STEP 12: Return the full result with answer, retrieved chunks, and evaluation scores
     return {
         "answer": answer,
-        "chunks": chunks,  # You can choose to hide this in API layer
+        "chunks": chunks,
         "evaluation": {
             "cosine_similarity_scores": similarity_scores,
             "average_score": avg_similarity
