@@ -106,17 +106,30 @@ ollama run llama3.2
 
     ```bash
     pip install -r requirements.txt # or pip3 install -r requirements.txt
-    python3 -m venv env   
     ```
+4. Set up environment vaiables:
 
-4. Apply migrations:
+   ```bash
+   SECRET_KEY=your_django_secret_key  # Can be found in settings.py
+   ALLOWED_HOSTS=127.0.0.1,localhost
+
+   # Database Configuration
+   DB_NAME=your_database_name
+   DB_USER=your_database_user
+   DB_PASSWORD=your_database_password
+   DB_HOST=localhost
+   DB_PORT=5432
+   ```
+
+
+5. Apply migrations:
 
     ```bash
     python manage.py makemigrations      
     python manage.py migrate
     ```
 
-5. Run the development server:
+6. Run the development server:
    ```bash
    python manage.py runserver
    ```
